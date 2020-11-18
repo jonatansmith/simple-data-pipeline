@@ -1,0 +1,11 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "simple-glue-etl"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-pwb1k82nppha"
+s3_prefix = "simple-glue-etl"
+region = "us-east-1"
+profile = "smith-personal"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "s3BucketRawName=\"raw.simple-data-pipeline\" s3BucketCFName=\"cftemplates.jonatansmith\""

@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  Glue ETL pipeline
+Parameters:
+  s3BucketRawName:
+    Description: Bucket name for s3BucketRaw. 
+    Type: String
+    Default: raw.simple-data-pipeline
+  s3BucketStageName:
+    Description: Bucket name for s3BucketRaw. 
+    Type: String
+    Default: stage.simple-data-pipeline
+
+Resources:
+  csvloader:
+    Type: "AWS::Glue::Job"
+    Properties:
+      Role: !Ref csvloaderIAMRole
+      DefaultArguments:
+        "--job-bookmark-option": "job-bookmark-enable"
+      Command:
+        Name: glueetl
+        ScriptLocation: ./csvloader.py
+      GlueVersion: "2.0"
+      MaxCapacity: 2
+
+  csvloaderIAMRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - glue.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: s3
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 's3:*'
+                Resource: 
+                  - !Sub arn:aws:s3:::${s3BucketRawName}
+                  - !Sub arn:aws:s3:::${s3BucketRawName}/*
+                  - !Sub arn:aws:s3:::${s3BucketStageName}
+                  - !Sub arn:aws:s3:::${s3BucketStageName}/*
+                  
+        - PolicyName: glue
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'glue:*'
+                Resource: '*'
+        - PolicyName: cloudwatch
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'cloudwatch:*'
+                Resource: '*'
+                
+
+  
+  s3BucketRaw:
+    Type: AWS::S3::Bucket
+    Properties: 
+      BucketName: !Ref s3BucketRawName
+  s3BucketStage:
+    Type: AWS::S3::Bucket
+    Properties: 
+      BucketName: !Ref s3BucketStageName
+  
