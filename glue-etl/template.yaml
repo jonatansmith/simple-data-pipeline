@@ -10,12 +10,17 @@ Parameters:
     Description: Bucket name for s3BucketRaw. 
     Type: String
     Default: stage.simple-data-pipeline
+  GlueServiceIAMManagedPolicy:
+    Description: IAM Managed policy for glue. Started with 'AWSGlueServiceRole'
+    Type: String
+    Default: "AWSGlueServiceRole-iam-s3access"
 
 Resources:
   csvloader:
     Type: "AWS::Glue::Job"
     Properties:
-      Role: !Ref csvloaderIAMRole
+      #Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/service-role/${GlueServiceIAMManagedPolicy}"
+      Role: !Ref AWSGlueServiceRolecsvloaderIAMRole
       DefaultArguments:
         "--job-bookmark-option": "job-bookmark-enable"
       Command:
@@ -24,9 +29,10 @@ Resources:
       GlueVersion: "2.0"
       MaxCapacity: 2
 
-  csvloaderIAMRole:
+  AWSGlueServiceRolecsvloaderIAMRole:
     Type: 'AWS::IAM::Role'
     Properties:
+      RoleName: AWSGlueServiceRolecsvloaderIAMRole
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -37,6 +43,9 @@ Resources:
             Action:
               - 'sts:AssumeRole'
       Path: /
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+
       Policies:
         - PolicyName: s3
           PolicyDocument:
@@ -64,7 +73,14 @@ Resources:
               - Effect: Allow
                 Action: 'cloudwatch:*'
                 Resource: '*'
-                
+        - PolicyName: cloudwatchlogs
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'logs:*'
+                Resource: '*'
+          
 
   
   s3BucketRaw:
