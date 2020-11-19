@@ -36,7 +36,7 @@ csvSchema = StructType([
 ])
 
 ##Create dataframe for CSV file
-df = spark.read.format('csv').schema(csvSchema).options(header='true',timestampFormat='yyyy-MM-dd\' \'HH:mm:ss.SSSSSS').load(csvPath)
+df = spark.read.format('csv').schema(csvSchema).option("header","true").option("timestampFormat",'yyyy-MM-dd HH:mm:ss.SSSSSS').option("mode", "DROPMALFORMED").load(csvPath)
 #df.show(2)
 #df.printSchema()
 job.init(args['JOB_NAME'], args)
